@@ -1,33 +1,40 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Get where
 
-import Control.Monad (foldM)
-import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
-import Data.Maybe (fromMaybe)
+import Control.Monad.Except
+import Data.Maybe (maybe)
 import qualified Data.Map.Strict as M
+import qualified Data.Set as S
 import Data.Random (MonadRandom, StdRandom(..), randomElement, runRVar)
-import Data.Text (Text, pack)
+import Data.Text (Text, append)
 
-import Types (Key(..), Subst)
+import Types
 
+data BindingState a = NotYetBound Key -- ^ alias the result should be bound to
+                    | Bound (Subst a)
+                    deriving (Eq, Show)
 
-sample :: MonadRandom m => [a] -> m a
-sample xs = runRVar (randomElement xs) StdRandom
+type BindingMap a = M.Map Key (BindingState a)
 
-getL :: Key -> Subst a -> Maybe [a]
-getL k s = case M.lookup k s of
-                      Nothing -> Nothing
-                      (Just []) -> Nothing
-                      (Just xs) -> Just xs
+get :: MonadRandom m => Subst a ->
+                        [Key] ->
+                        BindingMap a ->
+                        ExceptT Text m (Subst a, BindingMap a)
+get v@(SubstV _) [] m = return (v, m)
+get (SubstV _) xs _ = throwError "too many keys"
+get (SubstM _) [] _ = throwError "too few keys"
+get (SubstM m) (k:ks) bm = case M.lookup k bm of
+                             (Just (Bound s')) -> get s' ks bm
+                             (Just (NotYetBound alias)) -> do
+                               res <- g k m
+                               get res ks $ M.insert alias (Bound res) bm
+                             Nothing -> do
+                               res <- g k m
+                               get res ks bm
 
-tshow :: Show a => a -> Text
-tshow = pack . show
-
-mshow :: Maybe Text -> Text
-mshow = maybe " " id
-
-getT :: (MonadRandom m, Show a) => Key -> Subst a -> m Text
-getT k s = maybe (return " ") (\x -> tshow <$> sample x) (getL k s)
-
-get :: (MonadRandom m) => Key -> Subst a -> MaybeT m a
-get k s = MaybeT $ traverse sample (getL k s)
+g :: MonadRandom m => Key -> (M.Map Key (Subst a)) -> ExceptT Text m (Subst a)
+g k m = case M.lookup k m of
+  Nothing -> throwError $ "bad key: " `append` (unKey k)
+  (Just v@(SubstV _)) -> return v
+  (Just (SubstL xs)) -> lift $ runRVar (randomElement xs) StdRandom
+  (Just m@(SubstM _)) -> return m
