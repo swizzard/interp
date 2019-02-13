@@ -3,19 +3,18 @@ module GetSpec where
 
 import Control.Monad.Except
 import qualified Data.Map.Strict as M
-import Data.Text (Text)
 import Test.Hspec
 
-import Get
-import Types (Subst(..), substm)
+import Data.Text.Interp.Get
+import Data.Text.Interp.Types
 
-samFedoraColors :: Subst Text
+samFedoraColors :: Subst
 samFedoraColors = SubstL $ SubstV <$> ["green", "red", "blue"]
 
-samBallcapColors :: Subst Text
+samBallcapColors :: Subst
 samBallcapColors = SubstL $ SubstV <$> ["white", "black", "orange"]
 
-testSubst :: Subst Text
+testSubst :: Subst
 testSubst = substm [
   ("people", SubstL [
     substm [
@@ -44,7 +43,7 @@ spec :: Spec
 spec = do
   describe "get" $ do
     it "should get a color" $ do
-      (Right (c, _)) <- runExceptT $
+      (Right c) <- runExceptT $
         get testSubst ["people", "sam", "hats", "color"] M.empty
       c `shouldSatisfy` (`elem` expectedColors)
 
@@ -57,31 +56,8 @@ spec = do
         get testSubst ["people", "sam", "hats", "color", "hue"] M.empty
       e `shouldBe` "too many keys"
 
-    it "should error on too few keys" $ do
-      (Left e) <- runExceptT $ get testSubst ["people", "sam", "hats"] M.empty
-      e `shouldBe` "too few keys"
-
-    it "shouldn't bind anything without being asked to" $ do
-      (Right (_, m)) <- runExceptT $
-        get testSubst ["people", "sam", "hats", "color"] M.empty
-      m `shouldBe` M.empty
-
-    it "shouldn't re-bind anything" $ do
-      let bm = M.singleton "hats" $ Bound $
-                  substm [("type", SubstV "fedora"), ("color", samFedoraColors)]
-      (Right (_, m)) <- runExceptT $ get testSubst ["people", "sam", "hats", "color"] bm
-      m `shouldBe` bm
-
-    it "should bind NotYetBound" $ do
-      let bm = M.singleton "hats" (NotYetBound "h")
-      let hats = [substm [("type", SubstV "fedora"), ("color", samFedoraColors)],
-                  substm [("type", SubstV "ballcap"), ("color", samBallcapColors)]]
-      (Right (_, m)) <- runExceptT $ get testSubst ["people", "sam", "hats", "color"] bm
-      let (Just (Bound h)) = M.lookup "h" m
-      h `shouldSatisfy` (`elem` hats)
-
     it "should re-use bound results" $ do
-      let bm = M.singleton "hats" $ Bound $
+      let bm = M.singleton "hats"  $
                   substm [("type", SubstV "fedora"), ("color", samFedoraColors)]
-      (Right (c, _)) <- runExceptT $ get testSubst ["people", "sam", "hats", "type"] bm
+      (Right c) <- runExceptT $ get testSubst ["people", "sam", "hats", "type"] bm
       c `shouldBe` SubstV "fedora"

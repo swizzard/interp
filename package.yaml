@@ -22,19 +22,26 @@ description:         Please see the README on GitHub at <https://github.com/swiz
 dependencies:
 - aeson
 - base >= 4.7 && < 5
+- bytestring
 - containers
 - hspec
 - megaparsec
 - mtl
+- optparse-applicative
+- parser-combinators
 - random-fu
+- rvar
+- semigroups
 - text
 - transformers
+- unordered-containers
+- vector
 
 library:
   source-dirs: src
 
 executables:
-  interp-exe:
+  interp:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
