@@ -22,14 +22,19 @@ data Input = Input {
            , interpF :: String
            }
 
-input :: Parser Input
-input = Input <$>
-          strOption
-          ( long "substitutions"
-         <> help "JSON file containing map of substitutions" )
-        <*> strOption
-          ( long "interpolations"
-         <> help "file containing text to interpolate" )
+input ::Parser Input
+input = Input <$> (
+        (strOption $ long "substitutions"
+         <> help "JSON file containing map of substitutions")
+        <|>
+        (strArgument $ metavar "SUBST"
+          <> help "JSON file containing map of substitutions")
+        ) <*> (
+        (strOption $ long "interpolations"
+           <> help "file containing text to interpolate")
+        <|>
+         (strArgument $ metavar "INTERP"
+           <> help "file containing text to interpolate"))
 
 opts :: ParserInfo Input
 opts = info (input <**> helper)
