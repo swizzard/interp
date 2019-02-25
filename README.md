@@ -17,12 +17,14 @@ Fork this repo, make some changes, run `stack test` to make sure everything's ok
 ### Use
 #### CLI
 ```
-Usage: interp --substitutions ARG --interpolations ARG
+Usage: interp (--substitutions ARG | SUBST) (--interpolations ARG | INTERP)
   Randomly interpolate values into a template
 
 Available options:
   --substitutions ARG      JSON file containing map of substitutions
+  SUBST                    JSON file containing map of substitutions
   --interpolations ARG     file containing text to interpolate
+  INTERP                   file containing text to interpolate
   -h,--help                Show this help text
 ```
 
@@ -74,8 +76,8 @@ Binding is primarily useful for map values. It's possible to bind arrays, but si
 
 ### Etc.
 #### To-Do
- - [ ] Haddock documentation/comments
- - [ ] Add positional args in CLI
+ - [x] Haddock documentation/comments
+ - [x] Add positional args in CLI
  - [ ] Other formats (e.g. YAML) for substitutions file
  - [ ] More features
    - [ ] Preprocessing (prepending "a(n)", title casing, etc.)
@@ -83,7 +85,7 @@ Binding is primarily useful for map values. It's possible to bind arrays, but si
      - [ ] Check Tracery documentation for stuff to steal
    - [ ] Web interface??
  - [ ] Come up with a better name
- - [ ] Publish to Hackage
+ - [x] Publish to Hackage
 
 #### Contributing
 PRs, issues, feature requests, etc. are always more than welcome! Feel free to hit me up on [twitter](https://twitter.com/swizzard) or email me at sam dot raker at gmail dot com. Let me know if you like this, hate this, wish it were better, wish it were worse, whatever.

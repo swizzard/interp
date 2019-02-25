@@ -1,18 +1,17 @@
 name:                interp
-version:             0.1.0.0
+version:             1.0.0.2
 github:              "swizzard/interp"
 license:             BSD3
 author:              "sam raker"
 maintainer:          "sam.raker@gmail.com"
-copyright:           "(c) 2018 sam raker"
+copyright:           "(c) 2019 sam raker"
 
 extra-source-files:
 - README.md
-- ChangeLog.md
 
 # Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            Web
+synopsis:            Tracery-like randomized text interpolation
+category:            Text, Interpolation
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is

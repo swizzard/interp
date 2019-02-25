@@ -12,18 +12,27 @@ import Data.Text.Interp.Get
 import Data.Text.Interp.Types
 
 
+-- | Record holding intermediary interpolation state
 data IState = IState {
-              acc :: Text
-            , bm :: BindingMap
+              acc :: Text -- ^ interpolated text so far
+            , bm :: BindingMap -- ^ mapping of bound variables
             }
 
 newIState :: IState
 newIState = IState "" M.empty
 
-interp :: Subst -> NonEmpty IText -> I Text
+-- | Build interpolated text out of a `Data.Text.Interp.Types.Subst` mapping and
+-- a list of segments to interpolate
+interp :: Subst -- ^ mapping to get substitutions out of
+       -> NonEmpty IText -- ^ lits of segments to interpolate
+       -> I Text -- ^ final interpolation
 interp s its = acc <$> foldM (interp' s) newIState its
 
-interp' :: Subst -> IState -> IText -> I IState
+-- | Interpolate a single segment
+interp' :: Subst -- ^ mapping
+        -> IState -- ^ intermediary state
+        -> IText -- ^ segment to interpolate
+        -> I IState -- ^ updated state, after the segment's been interpolated
 interp' _ (IState a m) (RawText t) = return $ IState (a `append` t) m
 interp' s (IState a m) (ToInterpolate Nothing p) = do
   res <- get s p m
